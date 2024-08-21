@@ -1,6 +1,10 @@
 import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import React from "react";
 import Colors from "../../constants/Colors";
+import { useOAuth } from "@clerk/clerk-expo";
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { useCallback } from "react";
 
 export const useWarmUpBrowser = () => {
   React.useEffect(() => {
@@ -14,6 +18,28 @@ export const useWarmUpBrowser = () => {
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
+
+  useWarmUpBrowser();
+
+  const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
+
+  const onPress = useCallback(async () => {
+    console.log("Button pressed");
+    try {
+      const { createdSessionId, signIn, signUp, setActive } = await startOAuthFlow({
+        redirectUrl: Linking.createURL("/home", { scheme: "myapp" }),
+      });
+
+      if (createdSessionId) {
+
+      } else {
+
+      }
+    } catch (err) {
+      console.error("OAuth error", err);
+    }
+  }, [])
+
   return (
     <View style={styles.container}>
       <Image
@@ -25,7 +51,9 @@ export default function LoginScreen() {
         <Text style={styles.txt2}>
           Let's adopt the pet which you like and make there life happy again
         </Text>
-        <Pressable style={styles.button}>
+        <Pressable 
+        onPress={onPress}
+        style={styles.button}>
           <Text style={styles.txt3}>Get Started</Text>
         </Pressable>
       </View>
